@@ -53,7 +53,8 @@ post_process <- function(input_file, output_file, reference_crs, reference_pixel
   r <- rast(temp_aligned_file)
   if (all(is.na(values(r)))) {
     message(paste("Skipping raster with only NAs:", input_file))
-    skipped_files <<- c(skipped_files, input_file)
+    skipped <- get0("skipped_files", envir = .GlobalEnv, ifnotfound = character())
+    assign("skipped_files", c(skipped, input_file), envir = .GlobalEnv)
     unlink(temp_file)
     unlink(temp_aligned_file)
     return(NULL)

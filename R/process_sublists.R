@@ -4,26 +4,27 @@
 #' @param output_dir The directory where the output rasters will be saved
 #' @param download_path The path where downloaded rasters will be stored
 #' @param change_vals A sequence of years for which data will be downloaded
-#' @param bn_output A logical value. Wether the forest maps should be downloaded as canopy cover percentage (FALSE) or as Binary maps. Default is FALSE.
+#' @param bin_output Logical. If TRUE, download binary forest/no-forest maps; otherwise keep canopy percentages.
 #' @param n_cores Number of cores for parallel processing
 #' @importFrom ecochange echanges
 #' @importFrom terra rast
 #' @importFrom terra writeRaster
-#' @import here
 #' @return None
 #' @export
 #' @author Jeronimo Rodriguez-Escobar <jeronimo.rescobar@gmail.com>
-process_sublists <- function(biomat, output_dir, download_path, change_vals = seq(22, 23, 1), bin_output =FALSE, n_cores = 2) {
+process_sublists <- function(biomat, output_dir, download_path, change_vals = seq(22, 23, 1), bin_output = FALSE, n_cores = 2) {
   # Function to process each sf object and download rasters
   process_raster <- function(sf_obj, output_file) {
     # Download the raster data
-    d <- echanges(sf_obj,
-                  lyrs = c('treecover2000', 'lossyear'), # initial year and loss year
-                  path = download_path, # directory to store downloaded data
-                  eco_range = c(sf_obj$threshold, 100), # canopy cover threshold
-                  change_vals = change_vals, # years of data
-                  binary_output = bin_output, # if TRUE, produces binary masks of forest/non-forest, otherwise keeps the canopy threshold for each pixel
-                  mc.cores = n_cores) # number of cores for parallel processing
+    d <- echanges(
+      sf_obj,
+      lyrs = c("treecover2000", "lossyear"),
+      path = download_path,
+      eco_range = c(sf_obj$threshold, 100),
+      change_vals = change_vals,
+      binary_output = bin_output,
+      mc.cores = n_cores
+    )
 
     # Convert each RasterLayer to SpatRaster
     d <- lapply(d, function(x) {
@@ -53,10 +54,11 @@ process_sublists <- function(biomat, output_dir, download_path, change_vals = se
     }
 
     # Apply the process to each sf object in the sublist
-    map(1:length(biomat_r), function(x) {
-      sf_obj <- biomat_r[[x]]
-      output_file <- file.path(sublist_output_dir, paste0("raster_", x))
+    lapply(seq_along(biomat_r), function(idx) {
+      sf_obj <- biomat_r[[idx]]
+      output_file <- file.path(sublist_output_dir, paste0("raster_", idx))
       process_raster(sf_obj, output_file)
+      invisible(NULL)
     })
   }
 }

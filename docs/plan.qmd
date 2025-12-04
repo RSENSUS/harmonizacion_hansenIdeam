@@ -1,0 +1,32 @@
+---
+title: "Harmonization Cleanup Plan"
+format: gfm
+---
+
+# Goals
+- Stabilize the Hansen–IDEAM harmonization workflow as a clean, testable package.
+- Keep workflows reproducible: no hard-coded paths, minimal global state, documented parameters.
+- Align structure and style with `LC_orinoquia`/`LC_workflow` and the `global_NCP` standard.
+
+# Current Branch
+- `codex_cleanup`
+
+# Immediate Next Actions
+1. **Package sanity**
+   - Run `devtools::load_all()`; if ecochange or other deps are missing, install them.
+   - Run `devtools::check` (may need elevated perms due to processx) and fix NOTES/ERRORS.
+2. **Function polish**
+   - Confirm `process_sublists` parameters/outputs and default years; ensure bin_output naming and doc match.
+   - Verify `post_process` temp handling and skipped file tracking; avoid global side effects where possible.
+   - Add small unit tests in `tests/` for list splitting, preprocessing polygons, and a mock post_process pass on tiny rasters.
+3. **Workflow documentation**
+   - Write a vignette/README section showing end-to-end harmonization (biome split → downloads → post-process → assemble), referencing dissertation Module 1/4.
+   - Move any ad-hoc scripts from `workflows/` into `inst/scripts/` with clear instructions; keep large outputs out of git.
+4. **Repo hygiene**
+   - Review `.gitignore` for outputs/downloads; ensure `outs/`, `downloads/`, temp folders are ignored.
+   - Add `.Rbuildignore` entries for heavy artifacts (QGIS projects, outputs).
+   - Consider `renv` or env file for reproducibility if needed.
+
+# Integration Path
+- Keep this repo focused on forest harmonization; reuse shared functions across `LC_orinoquia`/`LC_workflow`.
+- Eventually fold shared code into a unified package, treating this workflow as a vignette/example profile.
